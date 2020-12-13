@@ -1,3 +1,8 @@
+# TODO: Добавить камни от которых ты умираешь
+# TODO: Сделать несколько уровней сложности
+# TODO: Добавить личный рейтинг
+
+
 import pygame
 import sys
 import random
@@ -7,7 +12,7 @@ pygame.init()
 
 SIZE_OF_BLOCK = 20
 BACK_COLOR = (150, 200, 150)
-MAIN_COLOR = (204, 250, 250)
+MAIN_COLOR = (255, 255, 255)
 WHITE = (255, 255, 255)
 BLUE = (204, 255, 204)
 BLACK = (50, 50, 50)
@@ -88,8 +93,8 @@ def start():
         screen.fill(BACK_COLOR)
         pygame.draw.rect(screen, MAIN_COLOR, [0, 0, size[0], MAIN_MARGIN])
 
-        text_total = courier.render(f"Total: {total}", 0, BLACK)
-        text_speed = courier.render(f"Speed: {speed}", 0, BLACK)
+        text_total = courier.render(f"Total: {total}", False, BLACK)
+        text_speed = courier.render(f"Speed: {speed}", False, BLACK)
         screen.blit(text_total, (SIZE_OF_BLOCK, SIZE_OF_BLOCK))
         screen.blit(text_speed, (SIZE_OF_BLOCK + 230, SIZE_OF_BLOCK))
 
