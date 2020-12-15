@@ -11,24 +11,25 @@ pygame.init()
 
 
 SIZE_OF_BLOCK = 20
-BACK_COLOR = (150, 200, 150)
+BACK_COLOR = (150, 150, 150)
 MAIN_COLOR = (255, 255, 255)
 WHITE = (255, 255, 255)
 BLUE = (204, 255, 204)
 BLACK = (50, 50, 50)
-RED = (200, 0, 0)
+RED = (200, 50, 50)
 SNAKE_COLOR = (50, 150, 50)
 MARGIN = 1
-MAIN_MARGIN = 70
+INTENT_MARGIN = 70
 COUNT_OF_BLOCKS = 20
-
+# Размер окна
 size = [SIZE_OF_BLOCK * COUNT_OF_BLOCKS + 2 * SIZE_OF_BLOCK + MARGIN * COUNT_OF_BLOCKS,
-        SIZE_OF_BLOCK * COUNT_OF_BLOCKS + 2 * SIZE_OF_BLOCK + MARGIN * COUNT_OF_BLOCKS + MAIN_MARGIN]
+        SIZE_OF_BLOCK * COUNT_OF_BLOCKS + 2 * SIZE_OF_BLOCK + MARGIN * COUNT_OF_BLOCKS + INTENT_MARGIN]
+
 print(size)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Snake')
 timer = pygame.time.Clock()
-courier = pygame.font.SysFont('courier', 35)
+my_font = pygame.font.SysFont('Comic Sans MS', 35)
 
 
 class SnakeBlocks:
@@ -43,34 +44,34 @@ class SnakeBlocks:
         return isinstance(other, SnakeBlocks) and self.x == other.x and self.y == other.y
 
 
-
+# Инициализация поля в шахматном порядке
 def draw_blocks(color, raw, column):
     pygame.draw.rect(screen, color, [SIZE_OF_BLOCK + column * SIZE_OF_BLOCK + MARGIN * (column + 1),
-                                     MAIN_MARGIN + SIZE_OF_BLOCK + raw * SIZE_OF_BLOCK + MARGIN * (raw + 1),
+                                     INTENT_MARGIN + SIZE_OF_BLOCK + raw * SIZE_OF_BLOCK + MARGIN * (raw + 1),
                                      SIZE_OF_BLOCK,
                                      SIZE_OF_BLOCK])
 
 
 def start():
-
+    # генерируем яблоко в рандомном месте на поле
     def random_empty_block():
-        x = random.randint(0, COUNT_OF_BLOCKS - 1)
-        y = random.randint(0, COUNT_OF_BLOCKS - 1)
+        x, y = random.randint(0, COUNT_OF_BLOCKS - 1), random.randint(0, COUNT_OF_BLOCKS - 1)
         empty_block = SnakeBlocks(x, y)
         while empty_block in snake_blocks:
             empty_block.x = random.randint(0, COUNT_OF_BLOCKS - 1)
             empty_block.y = random.randint(0, COUNT_OF_BLOCKS - 1)
         return empty_block
-
+    # Змейка в середине поля
     snake_blocks = [SnakeBlocks(13, 12), SnakeBlocks(12, 12), SnakeBlocks(11, 12)]
     apple = random_empty_block()
+    stones = random_empty_block()
     d_raw = 0
     d_col = 1
     total = 0
     speed = 1
 
     while True:
-
+        # Управление змейкой
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 print('Exit')
@@ -91,13 +92,13 @@ def start():
                     d_col = 1
 
         screen.fill(BACK_COLOR)
-        pygame.draw.rect(screen, MAIN_COLOR, [0, 0, size[0], MAIN_MARGIN])
+        pygame.draw.rect(screen, MAIN_COLOR, [0, 0, size[0], INTENT_MARGIN]) # место сверху для отображения очков
 
-        text_total = courier.render(f"Total: {total}", False, BLACK)
-        text_speed = courier.render(f"Speed: {speed}", False, BLACK)
-        screen.blit(text_total, (SIZE_OF_BLOCK, SIZE_OF_BLOCK))
-        screen.blit(text_speed, (SIZE_OF_BLOCK + 230, SIZE_OF_BLOCK))
-
+        text_total = my_font.render(f"Total: {total}", False, BLACK)
+        text_speed = my_font.render(f"Speed: {speed}", False, BLACK)
+        screen.blit(text_total, (SIZE_OF_BLOCK, SIZE_OF_BLOCK)) # отображение очков слева
+        screen.blit(text_speed, (SIZE_OF_BLOCK + 230, SIZE_OF_BLOCK)) # отображение скорости
+        # генерация поля
         for raw in range(COUNT_OF_BLOCKS):
             for column in range(COUNT_OF_BLOCKS):
                 if (raw + column) % 2 == 0:
@@ -112,9 +113,14 @@ def start():
             print('You have crashed')
             break
 
+        draw_blocks(BLACK, stones.x, stones.y)
         draw_blocks(RED, apple.x, apple.y)
         for block in snake_blocks:
             draw_blocks(SNAKE_COLOR, block.x, block.y)
+
+        if stones == snake_head:
+            print('You encountered a stone')
+            break
 
         if apple == snake_head:
             total += 1
@@ -126,20 +132,21 @@ def start():
         if new_head in snake_blocks:
             print('You have crashed yourself')
             break
-            # pygame.quit()
-            # sys.exit()
+
         snake_blocks.append(new_head)
         snake_blocks.pop(0)
 
         pygame.display.flip()
         timer.tick(5 + speed)
 
+
 menu = pygame_menu.Menu(220, 300, 'Welcome',
                         theme=pygame_menu.themes.THEME_GREEN)
 
-menu.add_text_input('Name: ', default='Player 1')
+menu.add_text_input('Name: ', default='Your name')
 menu.add_button('Play', start)
 menu.add_button("Exit", pygame_menu.events.EXIT)
+
 
 while True:
     events = pygame.event.get()
