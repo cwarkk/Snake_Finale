@@ -1,14 +1,15 @@
-# TODO: Добавить камни от которых ты умираешь
-# TODO: Сделать несколько уровней сложности
-# TODO: Добавить личный рейтинг
-
-
 import pygame
 import sys
 import random
 import pygame_menu
+from pygame import mixer
+
 pygame.init()
 
+back_image = pygame.image.load("picture.jpg")
+
+mixer.music.load("515946__mrthenoronha__detective-game-theme-loop.wav")
+mixer.music.play(-1)
 
 SIZE_OF_BLOCK = 20
 BACK_COLOR = (150, 150, 150)
@@ -21,7 +22,7 @@ SNAKE_COLOR = (50, 150, 50)
 MARGIN = 1
 INTENT_MARGIN = 70
 COUNT_OF_BLOCKS = 20
-# Размер окна
+
 size = [SIZE_OF_BLOCK * COUNT_OF_BLOCKS + 2 * SIZE_OF_BLOCK + MARGIN * COUNT_OF_BLOCKS,
         SIZE_OF_BLOCK * COUNT_OF_BLOCKS + 2 * SIZE_OF_BLOCK + MARGIN * COUNT_OF_BLOCKS + INTENT_MARGIN]
 
@@ -44,7 +45,6 @@ class SnakeBlocks:
         return isinstance(other, SnakeBlocks) and self.x == other.x and self.y == other.y
 
 
-# Инициализация поля в шахматном порядке
 def draw_blocks(color, raw, column):
     pygame.draw.rect(screen, color, [SIZE_OF_BLOCK + column * SIZE_OF_BLOCK + MARGIN * (column + 1),
                                      INTENT_MARGIN + SIZE_OF_BLOCK + raw * SIZE_OF_BLOCK + MARGIN * (raw + 1),
@@ -53,7 +53,7 @@ def draw_blocks(color, raw, column):
 
 
 def start():
-    # генерируем яблоко в рандомном месте на поле
+
     def random_empty_block():
         x, y = random.randint(0, COUNT_OF_BLOCKS - 1), random.randint(0, COUNT_OF_BLOCKS - 1)
         empty_block = SnakeBlocks(x, y)
@@ -61,7 +61,7 @@ def start():
             empty_block.x = random.randint(0, COUNT_OF_BLOCKS - 1)
             empty_block.y = random.randint(0, COUNT_OF_BLOCKS - 1)
         return empty_block
-    # Змейка в середине поля
+
     snake_blocks = [SnakeBlocks(13, 12), SnakeBlocks(12, 12), SnakeBlocks(11, 12)]
     apple = random_empty_block()
     stones = random_empty_block()
@@ -69,16 +69,38 @@ def start():
     d_col = 1
     total = 0
     speed = 1
+    running, PAUSE = 0, 1
+    state = running
 
+    def pause():
+        paused = True
+        global d_col
+        global d_raw
+        while paused:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    print('Exit')
+                    pygame.quit()
+                    sys.exit()
+
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        pygame.quit()
+                        quit()
+                    elif event.key == pygame.K_RETURN:
+                        paused = False
     while True:
-        # Управление змейкой
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 print('Exit')
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP and d_col != 0:
+                if event.key == pygame.K_q:
+                    pygame.quit()
+                    quit()
+                elif event.key == pygame.K_UP and d_col != 0:
                     d_raw = -1
                     d_col = 0
                 elif event.key == pygame.K_DOWN and d_col != 0:
@@ -90,15 +112,17 @@ def start():
                 elif event.key == pygame.K_RIGHT and d_raw != 0:
                     d_raw = 0
                     d_col = 1
+                elif event.key == pygame.K_ESCAPE:
+                    pause()
 
         screen.fill(BACK_COLOR)
-        pygame.draw.rect(screen, MAIN_COLOR, [0, 0, size[0], INTENT_MARGIN]) # место сверху для отображения очков
+        pygame.draw.rect(screen, MAIN_COLOR, [0, 0, size[0], INTENT_MARGIN])
 
         text_total = my_font.render(f"Total: {total}", False, BLACK)
         text_speed = my_font.render(f"Speed: {speed}", False, BLACK)
-        screen.blit(text_total, (SIZE_OF_BLOCK, SIZE_OF_BLOCK)) # отображение очков слева
-        screen.blit(text_speed, (SIZE_OF_BLOCK + 230, SIZE_OF_BLOCK)) # отображение скорости
-        # генерация поля
+        screen.blit(text_total, (SIZE_OF_BLOCK, SIZE_OF_BLOCK))
+        screen.blit(text_speed, (SIZE_OF_BLOCK + 250, SIZE_OF_BLOCK))
+
         for raw in range(COUNT_OF_BLOCKS):
             for column in range(COUNT_OF_BLOCKS):
                 if (raw + column) % 2 == 0:
@@ -143,12 +167,15 @@ def start():
 menu = pygame_menu.Menu(220, 300, 'Welcome',
                         theme=pygame_menu.themes.THEME_GREEN)
 
-menu.add_text_input('Name: ', default='Your name')
+menu.add_text_input('Name: ', default='')
 menu.add_button('Play', start)
 menu.add_button("Exit", pygame_menu.events.EXIT)
 
 
 while True:
+
+    screen.blit(back_image, (0, 0))
+
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
